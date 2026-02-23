@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "stooping-club",
+    "name": "Stooping Club",
     "slug": "stooping-club",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Stooping uses your location to show nearby free items.",
+        "NSPhotoLibraryUsageDescription": "Stooping needs photo access to let you add images to listings.",
+        "NSCameraUsageDescription": "Stooping needs camera access to let you take photos for listings."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +24,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
     "web": {
       "output": "static",
@@ -37,6 +47,25 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Stooping to use your location to find nearby free items."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Stooping to access your photos to add images to listings.",
+          "cameraPermission": "Allow Stooping to use your camera to take photos for listings."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#16A34A"
         }
       ]
     ],
