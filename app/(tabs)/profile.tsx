@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Switch,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +15,10 @@ import { router } from 'expo-router';
 
 import { useAuth } from '@/store/auth-context';
 import { useItems } from '@/store/items-context';
+import {
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+} from '@/lib/notifications';
 import { Avatar } from '@/components/ui/avatar';
 import { ItemCard } from '@/components/items/item-card';
 import { COMMUNITY_STATS } from '@/constants/mock-data';
@@ -62,7 +67,39 @@ function TrustBadge({ score }: { score: number }) {
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { items } = useItems();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    getNotificationPermissionStatus().then((status) => {
+      setNotificationsEnabled(status === 'granted');
+    });
+  }, []);
+
+  const handleNotificationToggle = async (value: boolean) => {
+    if (value) {
+      const granted = await requestNotificationPermission();
+      setNotificationsEnabled(granted);
+      if (!granted) {
+        Alert.alert(
+          'Notifications Blocked',
+          'Please enable notifications in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+    } else {
+      Alert.alert(
+        'Disable Notifications',
+        'To turn off notifications, go to your device settings.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ]
+      );
+    }
+  };
 
   if (!user) {
     return (
@@ -172,7 +209,7 @@ export default function ProfileScreen() {
             <Text style={styles.settingLabel}>🔔 Notifications</Text>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleNotificationToggle}
               trackColor={{ false: Colors.border, true: Colors.primaryLight }}
               thumbColor={notificationsEnabled ? Colors.primary : Colors.textTertiary}
             />

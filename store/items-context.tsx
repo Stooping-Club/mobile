@@ -4,12 +4,15 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
+  useEffect,
 } from 'react';
 import { Item, ItemStatus, NeighborhoodId, Story } from '@/types';
 import { MOCK_ITEMS, MOCK_STORIES } from '@/constants/mock-data';
 import { getNeighborhoodForCoords } from '@/constants/neighborhoods';
 import { getCategoryDef } from '@/constants/categories';
 import { analytics } from '@/lib/analytics';
+import { notify } from '@/lib/notifications';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +56,8 @@ const ItemsContext = createContext<ItemsContextType | undefined>(undefined);
 export function ItemsProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(MOCK_ITEMS);
   const [stories, setStories] = useState<Story[]>(MOCK_STORIES);
+  const itemsRef = useRef(items);
+  useEffect(() => { itemsRef.current = items; }, [items]);
   const [loading] = useState(false);
   const [selectedCategory, setSelectedCategoryState] = useState('all');
   const [selectedNeighborhood, setSelectedNeighborhoodState] =
@@ -127,27 +132,34 @@ export function ItemsProvider({ children }: { children: React.ReactNode }) {
 
       setItems((prev) => [newItem, ...prev]);
       analytics.track('item_posted', { category: data.category, itemId: newItem.id });
+      notify.itemPosted(newItem.title, newItem.neighborhood ?? 'your neighborhood');
       return newItem;
     },
     []
   );
 
   const updateItemStatus = useCallback(async (id: string, status: ItemStatus) => {
+    const current = itemsRef.current.find((i) => i.id === id);
     setItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, status, updatedAt: new Date() } : item
       )
     );
-    if (status === 'claimed') analytics.track('item_claimed', { itemId: id });
+    if (status === 'claimed') {
+      analytics.track('item_claimed', { itemId: id });
+      if (current) notify.itemClaimed(current.title);
+    }
   }, []);
 
   const markInterested = useCallback((id: string) => {
+    const current = itemsRef.current.find((i) => i.id === id);
     setItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, interestedCount: item.interestedCount + 1 } : item
       )
     );
     analytics.track('item_interested', { itemId: id });
+    if (current) notify.someoneInterested(current.title, current.interestedCount + 1);
   }, []);
 
   const incrementView = useCallback((id: string) => {
