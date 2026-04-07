@@ -47,6 +47,9 @@ jobs:
       - name: Build release APK
         working-directory: android
         run: ./gradlew assembleRelease
+        env:
+          EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN: ${{ secrets.EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN }}
+          EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN: ${{ secrets.EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
