@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   type Product,
@@ -62,8 +62,12 @@ function SortBar({
   active: SortOption;
   onSelect: (option: SortOption) => void;
 }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black">
+    <View
+      style={{ paddingTop: insets.top }}
+      className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black"
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
